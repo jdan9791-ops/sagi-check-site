@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { getSupabase } from "@/lib/db/supabase";
 import { RISK_HIGH } from "@/lib/constants";
 
+/** Constant-time comparison to prevent timing attacks. */
 function verifyAdminPassword(req: NextRequest): boolean {
   const adminPassword = process.env.ADMIN_PASSWORD;
   if (!adminPassword) return false;
@@ -10,7 +12,15 @@ function verifyAdminPassword(req: NextRequest): boolean {
   if (!authHeader?.startsWith("Bearer ")) return false;
 
   const token = authHeader.slice(7);
-  return token === adminPassword;
+
+  try {
+    const a = Buffer.from(token);
+    const b = Buffer.from(adminPassword);
+    if (a.length !== b.length) return false;
+    return timingSafeEqual(a, b);
+  } catch {
+    return false;
+  }
 }
 
 export async function GET(req: NextRequest) {

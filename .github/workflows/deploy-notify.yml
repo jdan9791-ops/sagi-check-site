@@ -28,6 +28,7 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{
               "chat_id": "${{ secrets.TELEGRAM_CHAT_ID }}",
+              "message_thread_id": ${{ secrets.TELEGRAM_THREAD_ID }},
               "text": "✅ *배포 완료!*\n\n사기사이트 모니터링 사이트가 성공적으로 배포되었습니다.\n\n🔗 [사이트 확인](${{ steps.deploy.outputs.preview-url }})\n📝 커밋: `${{ github.event.head_commit.message }}`",
               "parse_mode": "Markdown"
             }'
@@ -39,6 +40,7 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{
               "chat_id": "${{ secrets.TELEGRAM_CHAT_ID }}",
+              "message_thread_id": ${{ secrets.TELEGRAM_THREAD_ID }},
               "text": "❌ *배포 실패!*\n\n사기사이트 모니터링 배포 중 오류가 발생했습니다.\n\n📝 커밋: `${{ github.event.head_commit.message }}`\n🔍 [로그 확인](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})",
               "parse_mode": "Markdown"
             }'

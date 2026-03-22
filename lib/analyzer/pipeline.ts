@@ -170,18 +170,20 @@ async function _runPipeline(url: string): Promise<AnalyzeResponse> {
   // ① Validate URL
   const parsed = validateUrl(url);
   const domain = parsed.hostname;
-  // Normalize to origin (scheme + host) so upbit.com / https://upbit.com / https://upbit.com/home
-  // all share the same cache key and analysis result
+  // Normalize to origin for crawling/display
   const normalizedUrl = `${parsed.protocol}//${parsed.host}/`;
+  // Cache key uses hostname only: http/https and any path all map to same key
+  // e.g. upbit.com / https://upbit.com / https://upbit.com/home → "upbit.com"
+  const cacheKey = parsed.hostname;
 
-  // ② Check cache (24h TTL)
-  const cached = await getCachedResult(normalizedUrl);
+  // ② Check cache (7-day TTL)
+  const cached = await getCachedResult(cacheKey);
   if (cached) return cached;
 
   // ③ Whitelist check (instant)
   if (isWhitelisted(domain)) {
     const result = buildWhitelistResult(normalizedUrl);
-    await saveResult(normalizedUrl, result.riskScore, result.siteType, result);
+    await saveResult(cacheKey, result.riskScore, result.siteType, result);
     return result;
   }
 
@@ -262,7 +264,7 @@ async function _runPipeline(url: string): Promise<AnalyzeResponse> {
   };
 
   // ⑨ Save to DB
-  await saveResult(normalizedUrl, result.riskScore, result.siteType, result);
+  await saveResult(cacheKey, result.riskScore, result.siteType, result);
 
   return result;
 }

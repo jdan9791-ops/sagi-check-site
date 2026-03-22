@@ -11,8 +11,8 @@ export const CRAWLER_TIMEOUT_MS = 5000;
 /** Government API timeout in ms */
 export const GOVT_API_TIMEOUT_MS = 10000;
 
-/** Cache TTL in hours */
-export const CACHE_TTL_HOURS = 24;
+/** Cache TTL in hours (7 days) */
+export const CACHE_TTL_HOURS = 168;
 
 /** Rate limiting */
 export const RATE_LIMIT_PER_MINUTE = 10;

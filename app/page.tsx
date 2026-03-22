@@ -25,7 +25,7 @@ export default function HomePage() {
       <header className="bg-blue-700 text-white py-4 px-4 shadow-sm">
         <div className="max-w-2xl mx-auto">
           <span className="text-xl font-bold inline-flex items-center flex-wrap gap-1">
-            사이트 안전 검사
+            사기 사이트 진단기
             <VersionBadge />
           </span>
           <p className="text-blue-200 text-sm mt-0.5">
@@ -40,7 +40,7 @@ export default function HomePage() {
             <div className="space-y-4">
               <div className="text-5xl" aria-hidden="true">🔍</div>
               <h1 className="text-3xl font-bold text-slate-800">
-                웹사이트 안전성을 확인하세요
+                위험한 사이트인지 확인하세요
               </h1>
               <p className="text-slate-600 text-lg leading-relaxed">
                 금융 투자 중이신가요? 사이트의 위험도를 AI와 정부 공공데이터 분석 바탕으로 무료 분석해드립니다.
@@ -133,6 +133,9 @@ export default function HomePage() {
           <Disclaimer />
         </section>
       )}
+      <footer className="text-center text-xs text-slate-400 py-6 px-4">
+        Contact : <a href="mailto:jdan9791@gmail.com" className="underline hover:text-slate-600">jdan9791@gmail.com</a>
+      </footer>
     </main>
   );
 }

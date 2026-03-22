@@ -97,7 +97,7 @@ export default function HomePage() {
             <>
               {result.cached && (
                 <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-base text-blue-700">
-                  캐시된 분석 결과입니다. 최신 결과는 24시간 후에 업데이트됩니다.
+                  이전에 분석한 결과입니다. 최신 결과는 7일 후에 업데이트됩니다.
                 </div>
               )}
 

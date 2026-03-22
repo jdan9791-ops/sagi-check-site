@@ -6,7 +6,6 @@ import { LoadingSkeleton } from "@/components/loading-skeleton";
 import { RiskGauge } from "@/components/risk-gauge";
 import { ReportCard } from "@/components/report-card";
 import { ChecklistCard } from "@/components/checklist-card";
-import { ActionGuide } from "@/components/action-guide";
 import { ResponseGuide } from "@/components/response-guide";
 import { Disclaimer } from "@/components/disclaimer";
 import { VersionBadge } from "@/components/version-badge";
@@ -113,8 +112,6 @@ export default function HomePage() {
                   <ChecklistCard items={result.checklistItems} />
                 </>
               )}
-
-              <ActionGuide riskScore={result.riskScore} />
 
               {/* Response guide for high-risk finance sites */}
               {result.riskScore >= 70 && (

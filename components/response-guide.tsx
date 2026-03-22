@@ -47,6 +47,9 @@ export function ResponseGuide({ riskScore }: ResponseGuideProps) {
               돈을 보내신 은행에 즉시 전화하여 <strong>"전기통신금융사기 피해금 환급 특별법"</strong>에 따른 지급정지를 신청하세요.
               신청 후 금융감독원(<strong>1332</strong>)에 피해 접수하시면 됩니다.
             </p>
+            <p className="text-base text-slate-500 leading-relaxed mt-2">
+              사건 내용에 따라서 지급정지를 은행에서 진행해주지 않는 경우도 있습니다.
+            </p>
           </div>
         </div>
 
@@ -85,8 +88,7 @@ export function ResponseGuide({ riskScore }: ResponseGuideProps) {
       </div>
 
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-base text-amber-900 leading-relaxed">
-        <strong>중요:</strong> 피해를 입으셨다면 혼자 해결하려 하지 마세요. 전문 기관에 즉시 신고하면
-        피해 회복 가능성이 높아집니다.
+        <strong>중요:</strong> 피해를 입으셨다면 혼자 해결하려 하지 마세요. 전문가 혹은 전문 기관에 즉시 상담한후, 신고하면 피해 회복 가능성이 높아집니다.
       </div>
     </div>
   );

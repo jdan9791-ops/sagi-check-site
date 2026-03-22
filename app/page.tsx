@@ -15,11 +15,8 @@ import { AnalyzeResponse } from "@/lib/schemas";
 export default function HomePage() {
   const [result, setResult] = useState<AnalyzeResponse | null>(null);
   const [loading, setLoading] = useState(false);
-  const [showResponseGuide, setShowResponseGuide] = useState(false);
-
   function handleNewSearch() {
     setResult(null);
-    setShowResponseGuide(false);
   }
 
   return (
@@ -122,25 +119,12 @@ export default function HomePage() {
               {/* Response guide for high-risk finance sites */}
               {result.riskScore >= 70 && (
                 <div>
-                  <button
-                    onClick={() => setShowResponseGuide((v) => !v)}
-                    className="w-full flex items-center justify-between gap-2 bg-red-700 hover:bg-red-800 text-white font-semibold text-lg py-4 px-6 rounded-2xl transition-colors min-h-[56px]"
-                    aria-expanded={showResponseGuide}
-                  >
+                  <div className="w-full flex items-center gap-2 bg-red-700 text-white font-semibold text-lg py-4 px-6 rounded-2xl">
                     <span>대응 방법 알려드릴까요?</span>
-                    <span
-                      className="text-xl transition-transform duration-200"
-                      style={{ transform: showResponseGuide ? "rotate(180deg)" : "rotate(0deg)" }}
-                      aria-hidden="true"
-                    >
-                      ▼
-                    </span>
-                  </button>
-                  {showResponseGuide && (
-                    <div className="mt-3">
-                      <ResponseGuide riskScore={result.riskScore} />
-                    </div>
-                  )}
+                  </div>
+                  <div className="mt-3">
+                    <ResponseGuide riskScore={result.riskScore} />
+                  </div>
                 </div>
               )}
             </>

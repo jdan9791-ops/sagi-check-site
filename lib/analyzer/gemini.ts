@@ -70,7 +70,7 @@ function parseGeminiResponse(text: string, domain: string): GeminiParsed {
     const negMatch = text.match(/부정적인 사항:\s*(.+)/);
     const sumMatch = text.match(/요약 사항:\s*(.+)/);
 
-    const riskScore = riskMatch ? Math.min(100, Math.max(0, parseInt(riskMatch[1], 10))) : 50;
+    const riskScore = riskMatch ? Math.min(99, Math.max(0, parseInt(riskMatch[1], 10))) : 50;
     const positives = posMatch
       ? posMatch[1].split("|").map((s) => s.trim()).filter(Boolean)
       : [];

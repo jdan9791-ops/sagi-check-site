@@ -73,11 +73,6 @@ export function ActionGuide({ riskScore }: ActionGuideProps) {
         </a>
       </div>
 
-      <div className="mt-5 p-4 bg-amber-50 border border-amber-200 rounded-xl text-base text-amber-900 leading-relaxed">
-        <strong>지급정지 신청 방법:</strong> 피해 발생 즉시 해당 은행에 전화하여
-        "전기통신금융사기 피해금 환급 특별법"에 따른 지급정지를 신청하세요.
-        신청 후 금융감독원(1332)에 피해 접수를 하시면 됩니다.
-      </div>
     </div>
   );
 }

@@ -13,7 +13,7 @@ export function ReportCard({ positives, negatives, summary }: ReportCardProps) {
         <p className="text-slate-700 text-lg leading-loose">{summary}</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         {/* Positives */}
         {positives.length > 0 && (
           <div className="bg-green-50 border border-green-200 rounded-2xl p-5">

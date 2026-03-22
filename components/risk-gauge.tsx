@@ -9,9 +9,9 @@ interface RiskGaugeProps {
 
 function getRiskLevel(score: number): { label: string; color: string; bg: string; border: string } {
   if (score <= 30) return { label: "안전", color: "#16A34A", bg: "bg-green-50", border: "border-green-200" };
-  if (score <= 69) return { label: "주의", color: "#D97706", bg: "bg-amber-50", border: "border-amber-200" };
-  if (score <= 89) return { label: "위험", color: "#DC2626", bg: "bg-red-50", border: "border-red-200" };
-  return { label: "매우 위험", color: "#991B1B", bg: "bg-red-100", border: "border-red-400" };
+  if (score <= 69) return { label: "주의 요망", color: "#D97706", bg: "bg-amber-50", border: "border-amber-200" };
+  if (score <= 89) return { label: "고위험 관찰", color: "#DC2626", bg: "bg-red-50", border: "border-red-200" };
+  return { label: "이용 재검토 권고", color: "#991B1B", bg: "bg-red-100", border: "border-red-400" };
 }
 
 /** Semi-circular SVG risk gauge with count-up animation. */
@@ -132,11 +132,15 @@ export function RiskGauge({ score, isWhitelisted }: RiskGaugeProps) {
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block w-3 h-3 rounded-full bg-amber-500 flex-shrink-0" aria-hidden="true" />
-          주의 (31~69)
+          주의 요망 (31~69)
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block w-3 h-3 rounded-full bg-red-600 flex-shrink-0" aria-hidden="true" />
-          위험 (70~100)
+          <span className="inline-block w-3 h-3 rounded-full bg-red-500 flex-shrink-0" aria-hidden="true" />
+          고위험 관찰 (70~89)
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block w-3 h-3 rounded-full bg-red-900 flex-shrink-0" aria-hidden="true" />
+          이용 재검토 권고 (90~100)
         </span>
       </div>
     </div>

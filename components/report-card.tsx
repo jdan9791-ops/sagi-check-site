@@ -24,7 +24,7 @@ export function ReportCard({ positives, negatives, summary }: ReportCardProps) {
               >
                 ✓
               </span>
-              긍정적인 사항
+              신뢰 근거
             </h3>
             <ul className="space-y-2.5" role="list">
               {positives.map((item, i) => (
@@ -47,7 +47,7 @@ export function ReportCard({ positives, negatives, summary }: ReportCardProps) {
               >
                 !
               </span>
-              부정적인 사항
+              위험 정황 (근거 체인)
             </h3>
             <ul className="space-y-2.5" role="list">
               {negatives.map((item, i) => (

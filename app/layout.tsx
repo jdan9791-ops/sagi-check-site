@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -25,7 +24,6 @@ export default function RootLayout({
     <html lang="ko" className="h-full">
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-800 antialiased">
         {children}
-        <Script src="//t1.daumcdn.net/kas/static/ba.min.js" strategy="afterInteractive" />
       </body>
     </html>
   );

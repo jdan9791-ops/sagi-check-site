@@ -4,6 +4,7 @@ import { GeoResult } from "./geo-lookup";
 import { WhoisResult } from "./whois-lookup";
 import { BizCheckResult, FinancialCheckResult } from "./government-api";
 import { getConfig } from "../db/config";
+import { sendErrorAlert } from "../telegram";
 
 interface GeminiContext {
   url: string;
@@ -169,6 +170,7 @@ ${ctx.siteText}
     return parseGeminiResponse(responseText, domain);
   } catch (err) {
     console.error("[Gemini] analyzeWithGemini error:", err);
+    void sendErrorAlert(`Gemini 분석 오류 (${domain})`, err);
     return {
       riskScore: 50,
       positives: [],

@@ -6,8 +6,7 @@ import { checkBusinessNumber, checkFinancialCompany } from "./government-api";
 import { classifySite } from "./classifier";
 import { analyzeWithGemini } from "./gemini";
 import { getCachedResult, saveResult } from "../db/cache";
-import { sendAlert } from "../telegram";
-import { RISK_HIGH } from "../constants";
+import { sendErrorAlert } from "../telegram";
 import { AnalyzeResponse, ChecklistItem } from "../schemas";
 
 /** Validate URL: http/https only, no internal IPs. */
@@ -159,6 +158,15 @@ function buildChecklistItems(data: {
  * Run the full analysis pipeline for a given URL.
  */
 export async function runAnalysisPipeline(url: string): Promise<AnalyzeResponse> {
+  try {
+    return await _runPipeline(url);
+  } catch (err) {
+    void sendErrorAlert(`파이프라인 오류 (${url})`, err);
+    throw err;
+  }
+}
+
+async function _runPipeline(url: string): Promise<AnalyzeResponse> {
   // ① Validate URL
   const parsed = validateUrl(url);
   const domain = parsed.hostname;
@@ -253,11 +261,6 @@ export async function runAnalysisPipeline(url: string): Promise<AnalyzeResponse>
 
   // ⑨ Save to DB
   await saveResult(normalizedUrl, result.riskScore, result.siteType, result);
-
-  // ⑩ High-risk alert
-  if (result.riskScore >= RISK_HIGH) {
-    await sendAlert(normalizedUrl, result.riskScore, result.summary);
-  }
 
   return result;
 }

@@ -37,10 +37,12 @@ export function RiskGauge({ score, isWhitelisted }: RiskGaugeProps) {
 
   const { label, color, bg, border } = getRiskLevel(score);
 
-  // Semi-circle arc math (stable implementation)
+  // Semi-circle arc: center at (cx, cy), opens upward
+  // Angles follow standard math (0°=right, 180°=left, 270°=top in SVG y-down)
+  // sweep=1 (SVG clockwise) from 180° goes through 270° (top) to 360°
   const radius = 72;
   const cx = 100;
-  const cy = 95;
+  const cy = 98;
 
   function polarToCartesian(angleDeg: number) {
     const rad = (angleDeg * Math.PI) / 180;
@@ -50,14 +52,12 @@ export function RiskGauge({ score, isWhitelisted }: RiskGaugeProps) {
     };
   }
 
-  // Track: 180° → 0° (left to right, upper semicircle)
-  const trackLeft = polarToCartesian(180);
-  const trackRight = polarToCartesian(0);
+  const trackLeft = polarToCartesian(180);   // left endpoint
+  const trackRight = polarToCartesian(0);    // right endpoint
 
-  // Score arc: starts at left (180°), sweeps clockwise toward 0°
+  // Score arc sweeps clockwise from 180° (left) toward 360° (right) via 270° (top)
   const sweepAngle = (displayScore / 100) * 180;
-  const scoreEnd = polarToCartesian(180 - sweepAngle);
-  const largeArc = sweepAngle > 180 ? 1 : 0;
+  const scoreEnd = polarToCartesian(180 + sweepAngle);
 
   return (
     <div className={`rounded-2xl border-2 ${border} ${bg} shadow-sm p-6 flex flex-col items-center gap-4`}>
@@ -70,12 +70,12 @@ export function RiskGauge({ score, isWhitelisted }: RiskGaugeProps) {
 
       <svg
         width="220"
-        height="120"
-        viewBox="0 0 200 110"
+        height="122"
+        viewBox="0 0 200 118"
         role="img"
         aria-label={`위험 지수 ${score}점 - ${label}`}
       >
-        {/* Track arc */}
+        {/* Track arc: full semicircle from left to right via top */}
         <path
           d={`M ${trackLeft.x} ${trackLeft.y} A ${radius} ${radius} 0 0 1 ${trackRight.x} ${trackRight.y}`}
           fill="none"
@@ -83,10 +83,10 @@ export function RiskGauge({ score, isWhitelisted }: RiskGaugeProps) {
           strokeWidth="16"
           strokeLinecap="round"
         />
-        {/* Score arc */}
+        {/* Score arc: from left, clockwise to scoreEnd */}
         {displayScore > 0 && (
           <path
-            d={`M ${trackLeft.x} ${trackLeft.y} A ${radius} ${radius} 0 ${largeArc} 1 ${scoreEnd.x} ${scoreEnd.y}`}
+            d={`M ${trackLeft.x} ${trackLeft.y} A ${radius} ${radius} 0 0 1 ${scoreEnd.x} ${scoreEnd.y}`}
             fill="none"
             stroke={color}
             strokeWidth="16"
@@ -96,7 +96,7 @@ export function RiskGauge({ score, isWhitelisted }: RiskGaugeProps) {
         {/* Score number */}
         <text
           x={cx}
-          y={cy - 10}
+          y={cy - 8}
           textAnchor="middle"
           fontSize="36"
           fontWeight="800"
@@ -107,13 +107,13 @@ export function RiskGauge({ score, isWhitelisted }: RiskGaugeProps) {
         </text>
         <text
           x={cx}
-          y={cy + 14}
+          y={cy + 16}
           textAnchor="middle"
           fontSize="14"
           fill="#64748B"
           fontFamily="Pretendard, sans-serif"
         >
-          / 100점
+          / 99점
         </text>
       </svg>
 

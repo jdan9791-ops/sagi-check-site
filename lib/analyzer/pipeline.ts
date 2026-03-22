@@ -170,7 +170,9 @@ async function _runPipeline(url: string): Promise<AnalyzeResponse> {
   // ① Validate URL
   const parsed = validateUrl(url);
   const domain = parsed.hostname;
-  const normalizedUrl = parsed.href;
+  // Normalize to origin (scheme + host) so upbit.com / https://upbit.com / https://upbit.com/home
+  // all share the same cache key and analysis result
+  const normalizedUrl = `${parsed.protocol}//${parsed.host}/`;
 
   // ② Check cache (24h TTL)
   const cached = await getCachedResult(normalizedUrl);

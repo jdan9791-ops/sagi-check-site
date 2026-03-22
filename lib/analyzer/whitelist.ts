@@ -1,5 +1,25 @@
 /** Official financial institution domains — immediately classified as safe (risk score 5). */
 export const OFFICIAL_DOMAINS = [
+  // 국내 코인/암호화폐 거래소
+  "upbit.com",
+  "bithumb.com",
+  "coinone.co.kr",
+  "korbit.co.kr",
+  "gopax.co.kr",
+  // 글로벌 코인/암호화폐 거래소
+  "binance.com",
+  "coinbase.com",
+  "kraken.com",
+  "okx.com",
+  "bybit.com",
+  "bitget.com",
+  "kucoin.com",
+  "gate.io",
+  "mexc.com",
+  "bitmex.com",
+  "crypto.com",
+  "gemini.com",
+  "bitstamp.net",
   // 시중은행
   "kbstar.com",
   "shinhan.com",

@@ -29,9 +29,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "인증이 필요합니다." }, { status: 401 });
   }
 
+  let supabase;
   try {
-    const supabase = getSupabase();
+    supabase = getSupabase();
+  } catch (err) {
+    console.error("[Admin] Supabase 초기화 실패:", err);
+    return NextResponse.json(
+      { error: "Supabase 환경변수(SUPABASE_URL, SUPABASE_ANON_KEY)가 설정되지 않았습니다." },
+      { status: 500 }
+    );
+  }
 
+  try {
     const [totalResult, highRiskResult, recentResult, configsResult] = await Promise.allSettled([
       supabase
         .from("search_logs")
@@ -79,7 +88,8 @@ export async function GET(req: NextRequest) {
       recentLogs,
       configs,
     });
-  } catch {
+  } catch (err) {
+    console.error("[Admin] 통계 조회 오류:", err);
     return NextResponse.json(
       { error: "통계 데이터를 불러오는 중 오류가 발생했습니다." },
       { status: 500 }

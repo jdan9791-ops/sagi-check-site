@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { CaptchaGate } from "./captcha-gate";
+import { useState } from "react";
 import { AnalyzeResponse } from "@/lib/schemas";
 
 interface UrlInputProps {
@@ -12,36 +11,6 @@ interface UrlInputProps {
 export function UrlInput({ onResult, onLoading }: UrlInputProps) {
   const [url, setUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [requiresCaptcha, setRequiresCaptcha] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-
-  const getFingerprintId = useCallback(async (): Promise<string> => {
-    try {
-      // Use a simple combination of browser properties as fingerprint
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.textBaseline = "top";
-        ctx.font = "14px Arial";
-        ctx.fillText("fingerprint", 2, 2);
-      }
-      const canvasHash = canvas.toDataURL().slice(-20);
-      const ua = navigator.userAgent;
-      const lang = navigator.language;
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const screen = `${window.screen.width}x${window.screen.height}`;
-      const raw = `${canvasHash}${ua}${lang}${tz}${screen}`;
-
-      // Simple hash
-      let hash = 0;
-      for (let i = 0; i < raw.length; i++) {
-        hash = ((hash << 5) - hash + raw.charCodeAt(i)) | 0;
-      }
-      return Math.abs(hash).toString(36);
-    } catch {
-      return "unknown";
-    }
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,36 +33,19 @@ export function UrlInput({ onResult, onLoading }: UrlInputProps) {
       return;
     }
 
-    if (requiresCaptcha && !captchaToken) {
-      setError("보안 문자 인증을 완료해 주세요.");
-      return;
-    }
-
     onLoading(true);
-    setError(null);
 
     try {
-      const fingerprintId = await getFingerprintId();
-
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          url: normalizedUrl,
-          fingerprintId,
-          captchaToken: captchaToken ?? undefined,
-        }),
+        body: JSON.stringify({ url: normalizedUrl }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        if (data.requiresCaptcha) {
-          setRequiresCaptcha(true);
-          setError("보안 문자 인증이 필요합니다. 아래 인증을 완료해 주세요.");
-        } else {
-          setError(data.error ?? "분석 중 오류가 발생했습니다.");
-        }
+        setError(data.error ?? "분석 중 오류가 발생했습니다.");
         return;
       }
 
@@ -148,16 +100,6 @@ export function UrlInput({ onResult, onLoading }: UrlInputProps) {
           <span className="mt-0.5 shrink-0">⚠️</span>
           <span>{error}</span>
         </div>
-      )}
-
-      {requiresCaptcha && (
-        <CaptchaGate
-          onVerify={(token) => {
-            setCaptchaToken(token);
-            setError(null);
-          }}
-          onExpire={() => setCaptchaToken(null)}
-        />
       )}
 
       <button

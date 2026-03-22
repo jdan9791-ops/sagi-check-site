@@ -104,10 +104,17 @@ export async function analyzeWithGemini(
 
   const genAI = new GoogleGenerativeAI(apiKey);
   const modelName = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
-  const model = genAI.getGenerativeModel({ model: modelName });
-
   const domain = new URL(ctx.url).hostname;
   const systemPrompt = await getConfig("system_prompt", DEFAULT_SYSTEM_PROMPT);
+
+  // Thinking 토큰 비활성화: gemini-2.5-flash는 기본적으로 thinking을 사용해
+  // 출력 토큰 대비 3~5배 비용이 발생함. 구조화된 분석 형식에서는 불필요.
+  const model = genAI.getGenerativeModel({
+    model: modelName,
+    systemInstruction: systemPrompt,
+    // @ts-expect-error thinkingConfig is supported by gemini-2.5-flash but not yet typed
+    generationConfig: { thinkingConfig: { thinkingBudget: 0 } },
+  });
 
   const userPrompt = `
 ## 분석 대상
@@ -161,10 +168,7 @@ ${ctx.siteText}
 위 정보를 종합하여 지정된 형식으로 분석 결과를 작성해주세요.`;
 
   try {
-    const result = await model.generateContent([
-      { text: systemPrompt },
-      { text: userPrompt },
-    ]);
+    const result = await model.generateContent(userPrompt);
 
     const responseText = result.response.text();
     return parseGeminiResponse(responseText, domain);
@@ -189,8 +193,8 @@ export async function classifyWithGemini(
   if (!apiKey) return "NORMAL";
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const modelName = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
-  const model = genAI.getGenerativeModel({ model: modelName });
+  // 분류는 단순 3지선다 → 저비용 모델로 충분
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 
   try {
     const isContentSparse = siteText.trim().length < 200;

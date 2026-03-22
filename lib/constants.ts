@@ -3,7 +3,7 @@ export const RISK_HIGH = 70;
 export const RISK_LOW = 30;
 
 /** Max HTML content length to send to Gemini */
-export const MAX_HTML_LENGTH = 3000;
+export const MAX_HTML_LENGTH = 2000;
 
 /** Crawler timeout in ms */
 export const CRAWLER_TIMEOUT_MS = 5000;

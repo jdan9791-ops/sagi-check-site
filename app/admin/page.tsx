@@ -290,6 +290,7 @@ export default function AdminPage() {
                         <th className="text-center py-2 px-3 text-slate-600 font-medium">유형</th>
                         <th className="text-right py-2 px-3 text-slate-600 font-medium">점수</th>
                         <th className="text-right py-2 px-3 text-slate-600 font-medium">검색수</th>
+                        <th className="text-center py-2 px-3 text-slate-600 font-medium">결과</th>
                         <th className="text-right py-2 px-3 text-slate-600 font-medium">날짜</th>
                       </tr>
                     </thead>
@@ -306,6 +307,16 @@ export default function AdminPage() {
                             {log.risk_score}점
                           </td>
                           <td className="py-2 px-3 text-right text-slate-600">{log.hit_count}</td>
+                          <td className="py-2 px-3 text-center">
+                            <a
+                              href={`/?url=${encodeURIComponent(log.url)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-700 hover:underline text-xs font-medium whitespace-nowrap"
+                            >
+                              결과 보기 →
+                            </a>
+                          </td>
                           <td className="py-2 px-3 text-right text-slate-500">
                             {new Date(log.last_date).toLocaleDateString("ko-KR")}
                           </td>

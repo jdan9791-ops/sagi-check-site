@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UrlInput } from "@/components/url-input";
 import { LoadingSkeleton } from "@/components/loading-skeleton";
 import { RiskGauge } from "@/components/risk-gauge";
@@ -14,8 +14,32 @@ import { AnalyzeResponse } from "@/lib/schemas";
 export default function HomePage() {
   const [result, setResult] = useState<AnalyzeResponse | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlParam = params.get("url");
+    if (!urlParam) return;
+
+    let normalizedUrl = urlParam.trim();
+    if (!normalizedUrl.startsWith("http://") && !normalizedUrl.startsWith("https://")) {
+      normalizedUrl = `https://${normalizedUrl}`;
+    }
+
+    setLoading(true);
+    fetch("/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: normalizedUrl }),
+    })
+      .then((res) => res.json())
+      .then((data: AnalyzeResponse) => setResult(data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
   function handleNewSearch() {
     setResult(null);
+    window.history.replaceState(null, "", "/");
   }
 
   return (

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AnalyzeRequestSchema } from "@/lib/schemas";
 import { runAnalysisPipeline } from "@/lib/analyzer/pipeline";
-import { checkRateLimit, getIpMinuteCount } from "@/lib/rate-limit";
+import { checkRateLimit, getIpMinuteCount, shouldSendAbuseAlert } from "@/lib/rate-limit";
 import { verifyHCaptcha } from "@/lib/fingerprint";
 import { sendAbuseAlert } from "@/lib/telegram";
 
@@ -60,10 +60,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Check for abuse (5+ requests per minute from same IP → alert)
+    // Check for abuse (5+ requests per minute from same IP → alert, 5분 쿨다운)
     const minuteCount = await getIpMinuteCount(ip);
     if (minuteCount >= 5) {
-      await sendAbuseAlert(ip, minuteCount);
+      const canAlert = await shouldSendAbuseAlert(ip);
+      if (canAlert) {
+        await sendAbuseAlert(ip, minuteCount);
+      }
     }
 
     // Run analysis pipeline

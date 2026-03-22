@@ -1,3 +1,13 @@
+function buildPayload(chatId: string, text: string) {
+  const threadId = process.env.TELEGRAM_THREAD_ID;
+  return {
+    chat_id: chatId,
+    text,
+    parse_mode: "Markdown",
+    ...(threadId ? { message_thread_id: Number(threadId) } : {}),
+  };
+}
+
 /**
  * Send a Telegram alert to the admin.
  */
@@ -23,11 +33,7 @@ export async function sendAlert(
     await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: message,
-        parse_mode: "Markdown",
-      }),
+      body: JSON.stringify(buildPayload(chatId, message)),
     });
   } catch {
     // Non-critical: swallow errors
@@ -41,17 +47,18 @@ export async function sendAbuseAlert(ip: string, count: number): Promise<void> {
 
   if (!token || !chatId) return;
 
-  const message = `⚠️ *어뷰징 의심 감지*\nIP: \`${ip}\`\n분당 요청 수: *${count}회*`;
+  const message = [
+    `🚫 *악의적 접근 감지*`,
+    `IP: \`${ip}\``,
+    `분당 요청 수: *${count}회* (기준: 5회 이상)`,
+    `⛔ 해당 IP는 10회 초과 시 자동 차단됩니다.`,
+  ].join("\n");
 
   try {
     await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: message,
-        parse_mode: "Markdown",
-      }),
+      body: JSON.stringify(buildPayload(chatId, message)),
     });
   } catch {
     // Non-critical

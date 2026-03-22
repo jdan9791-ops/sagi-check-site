@@ -116,7 +116,7 @@ export async function checkRateLimit(
   }
 }
 
-/** Get the total daily count for an IP (for Telegram alert checks). */
+/** Get the current minute request count for an IP. */
 export async function getIpMinuteCount(ip: string): Promise<number> {
   try {
     const key = minuteKey("ip", ip);
@@ -124,5 +124,20 @@ export async function getIpMinuteCount(ip: string): Promise<number> {
     return count ?? 0;
   } catch {
     return 0;
+  }
+}
+
+/**
+ * Returns true (and sets cooldown) if an abuse alert should be sent for this IP.
+ * Cooldown: 5 minutes per IP to prevent alert spam.
+ */
+export async function shouldSendAbuseAlert(ip: string): Promise<boolean> {
+  const cooldownKey = `abuse-alert-cooldown:${ip}`;
+  try {
+    // SET NX = only set if key doesn't exist (atomic check-and-set)
+    const set = await redis.set(cooldownKey, 1, { nx: true, ex: 300 }); // 5분 쿨다운
+    return set === "OK";
+  } catch {
+    return false;
   }
 }

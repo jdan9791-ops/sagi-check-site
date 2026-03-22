@@ -320,7 +320,7 @@ export default function AdminPage() {
                           <td className="py-2 px-3 text-right text-slate-600">{log.hit_count}</td>
                           <td className="py-2 px-3 text-center">
                             <a
-                              href={`/?url=${encodeURIComponent(log.url)}`}
+                              href={`/?preview=1&url=${encodeURIComponent(log.url)}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-700 hover:underline text-xs font-medium whitespace-nowrap"

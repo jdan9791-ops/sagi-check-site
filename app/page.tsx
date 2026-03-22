@@ -20,21 +20,33 @@ export default function HomePage() {
     const urlParam = params.get("url");
     if (!urlParam) return;
 
-    let normalizedUrl = urlParam.trim();
-    if (!normalizedUrl.startsWith("http://") && !normalizedUrl.startsWith("https://")) {
-      normalizedUrl = `https://${normalizedUrl}`;
-    }
+    const isPreview = params.get("preview") === "1";
 
-    setLoading(true);
-    fetch("/api/analyze", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: normalizedUrl }),
-    })
-      .then((res) => res.json())
-      .then((data: AnalyzeResponse) => setResult(data))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    if (isPreview) {
+      // 관리자 결과 보기: DB에서 직접 읽어옴 (AI 호출 없음, 비용 없음)
+      setLoading(true);
+      fetch(`/api/result?url=${encodeURIComponent(urlParam)}`)
+        .then((res) => res.json())
+        .then((data: AnalyzeResponse) => setResult(data))
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    } else {
+      let normalizedUrl = urlParam.trim();
+      if (!normalizedUrl.startsWith("http://") && !normalizedUrl.startsWith("https://")) {
+        normalizedUrl = `https://${normalizedUrl}`;
+      }
+
+      setLoading(true);
+      fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: normalizedUrl }),
+      })
+        .then((res) => res.json())
+        .then((data: AnalyzeResponse) => setResult(data))
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    }
   }, []);
 
   function handleNewSearch() {

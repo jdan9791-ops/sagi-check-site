@@ -3,6 +3,7 @@ import { GeminiParsed } from "../schemas";
 import { GeoResult } from "./geo-lookup";
 import { WhoisResult } from "./whois-lookup";
 import { BizCheckResult, FinancialCheckResult } from "./government-api";
+import { getConfig } from "../db/config";
 
 interface GeminiContext {
   url: string;
@@ -15,7 +16,8 @@ interface GeminiContext {
   businessNumbers: string[];
 }
 
-const SYSTEM_PROMPT = `당신은 글로벌 사이버 보안 분석가이자 디지털 자산 보호 전문가입니다.
+/** 코드 기본값 (DB에 값이 없을 때 fallback으로 사용) */
+const DEFAULT_SYSTEM_PROMPT = `당신은 글로벌 사이버 보안 분석가이자 디지털 자산 보호 전문가입니다.
 입력된 데이터를 바탕으로 해당 웹사이트의 보안 취약성과 사용자 주의가 필요한 비즈니스 패턴을 다차원적으로 분석하십시오.
 
 ## 진단 원칙 (반드시 준수)
@@ -103,6 +105,7 @@ export async function analyzeWithGemini(
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const domain = new URL(ctx.url).hostname;
+  const systemPrompt = await getConfig("system_prompt", DEFAULT_SYSTEM_PROMPT);
 
   const userPrompt = `
 ## 분석 대상
@@ -157,7 +160,7 @@ ${ctx.siteText}
 
   try {
     const result = await model.generateContent([
-      { text: SYSTEM_PROMPT },
+      { text: systemPrompt },
       { text: userPrompt },
     ]);
 

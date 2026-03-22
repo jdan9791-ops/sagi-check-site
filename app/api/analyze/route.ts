@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+
+export const maxDuration = 60; // seconds (Vercel serverless function timeout)
 import { AnalyzeRequestSchema } from "@/lib/schemas";
 import { runAnalysisPipeline } from "@/lib/analyzer/pipeline";
 import { checkRateLimit, getIpMinuteCount, shouldSendAbuseAlert } from "@/lib/rate-limit";

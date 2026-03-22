@@ -128,7 +128,7 @@ export function UrlInput({ onResult, onLoading }: UrlInputProps) {
         </div>
         <input
           id="url-input"
-          type="url"
+          type="text"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="검사할 사이트 주소를 입력하세요 (예: https://example.com)"

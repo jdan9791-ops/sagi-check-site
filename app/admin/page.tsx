@@ -88,7 +88,7 @@ export default function AdminPage() {
       setPromptValue(findConfig(data.configs, "system_prompt"));
       setRiskHigh(findConfig(data.configs, "risk_high") || "70");
       setRiskLow(findConfig(data.configs, "risk_low") || "30");
-      setCacheTtl(findConfig(data.configs, "cache_ttl_hours") || "24");
+      setCacheTtl(findConfig(data.configs, "cache_ttl_hours") || "168");
     } catch {
       setError("서버 연결에 실패했습니다.");
     } finally {
@@ -417,7 +417,7 @@ export default function AdminPage() {
                   onChange={(e) => setCacheTtl(e.target.value)}
                   className="w-full h-12 px-4 border-2 border-slate-300 rounded-lg text-slate-800 font-mono text-lg focus:outline-none focus:border-blue-500 transition-colors"
                 />
-                <p className="text-xs text-slate-400">현재: {findConfig(stats.configs, "cache_ttl_hours") || "24"}시간</p>
+                <p className="text-xs text-slate-400">현재: {findConfig(stats.configs, "cache_ttl_hours") || "168"}시간</p>
               </div>
             </div>
 

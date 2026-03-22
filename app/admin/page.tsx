@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface HighRiskSite {
   url: string;
@@ -55,6 +55,11 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("dashboard");
 
+  useEffect(() => {
+    const saved = sessionStorage.getItem("admin_pw");
+    if (saved) fetchStats(saved);
+  }, []);
+
   // 프롬프트 편집 상태
   const [promptValue, setPromptValue] = useState("");
   const [promptSaving, setPromptSaving] = useState(false);
@@ -67,23 +72,23 @@ export default function AdminPage() {
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [settingsSaveMsg, setSettingsSaveMsg] = useState<string | null>(null);
 
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
+  async function fetchStats(pw: string) {
     setLoading(true);
     setError(null);
-
     try {
       const response = await fetch("/api/admin", {
-        headers: { Authorization: `Bearer ${password}` },
+        headers: { Authorization: `Bearer ${pw}` },
       });
 
       if (!response.ok) {
         const data = await response.json();
+        sessionStorage.removeItem("admin_pw");
         setError(data.error ?? "인증에 실패했습니다.");
         return;
       }
 
       const data = await response.json() as AdminStats;
+      sessionStorage.setItem("admin_pw", pw);
       setStats(data);
       setPromptValue(findConfig(data.configs, "system_prompt"));
       setRiskHigh(findConfig(data.configs, "risk_high") || "70");
@@ -96,12 +101,18 @@ export default function AdminPage() {
     }
   }
 
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    await fetchStats(password);
+  }
+
   async function saveConfig(key: string, value: string) {
+    const pw = sessionStorage.getItem("admin_pw") ?? password;
     const response = await fetch("/api/admin", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${password}`,
+        Authorization: `Bearer ${pw}`,
       },
       body: JSON.stringify({ action: "save_config", key, value }),
     });

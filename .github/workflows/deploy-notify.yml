@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - claude/security-vulnerability-analysis-dxZ4R
 
 jobs:
   deploy:

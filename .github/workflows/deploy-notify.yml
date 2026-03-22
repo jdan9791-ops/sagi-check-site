@@ -1,0 +1,44 @@
+name: Deploy & Notify
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: "--prod"
+
+      - name: 배포 성공 알림
+        if: success()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "chat_id": "${{ secrets.TELEGRAM_CHAT_ID }}",
+              "text": "✅ *배포 완료!*\n\n사기사이트 모니터링 사이트가 성공적으로 배포되었습니다.\n\n🔗 [사이트 확인](${{ steps.deploy.outputs.preview-url }})\n📝 커밋: `${{ github.event.head_commit.message }}`",
+              "parse_mode": "Markdown"
+            }'
+
+      - name: 배포 실패 알림
+        if: failure()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "chat_id": "${{ secrets.TELEGRAM_CHAT_ID }}",
+              "text": "❌ *배포 실패!*\n\n사기사이트 모니터링 배포 중 오류가 발생했습니다.\n\n📝 커밋: `${{ github.event.head_commit.message }}`\n🔍 [로그 확인](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})",
+              "parse_mode": "Markdown"
+            }'

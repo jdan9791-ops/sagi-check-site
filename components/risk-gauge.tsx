@@ -7,10 +7,11 @@ interface RiskGaugeProps {
   isWhitelisted?: boolean;
 }
 
-function getRiskLevel(score: number): { label: string; color: string; bg: string } {
-  if (score <= 30) return { label: "안전", color: "#16A34A", bg: "bg-green-50" };
-  if (score <= 69) return { label: "주의", color: "#D97706", bg: "bg-amber-50" };
-  return { label: "위험", color: "#DC2626", bg: "bg-red-50" };
+function getRiskLevel(score: number): { label: string; color: string; bg: string; border: string } {
+  if (score <= 30) return { label: "안전", color: "#16A34A", bg: "bg-green-50", border: "border-green-200" };
+  if (score <= 69) return { label: "주의", color: "#D97706", bg: "bg-amber-50", border: "border-amber-200" };
+  if (score <= 89) return { label: "위험", color: "#DC2626", bg: "bg-red-50", border: "border-red-200" };
+  return { label: "매우 위험", color: "#991B1B", bg: "bg-red-100", border: "border-red-400" };
 }
 
 /** Semi-circular SVG risk gauge with count-up animation. */
@@ -25,7 +26,6 @@ export function RiskGauge({ score, isWhitelisted }: RiskGaugeProps) {
     const animate = (now: number) => {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      // Ease out cubic
       const eased = 1 - Math.pow(1 - progress, 3);
       start = Math.round(eased * score);
       setDisplayScore(start);
@@ -35,83 +35,81 @@ export function RiskGauge({ score, isWhitelisted }: RiskGaugeProps) {
     requestAnimationFrame(animate);
   }, [score]);
 
-  const { label, color, bg } = getRiskLevel(score);
+  const { label, color, bg, border } = getRiskLevel(score);
 
-  // Semi-circle gauge math
-  const radius = 70;
+  // Semi-circle arc math (stable implementation)
+  const radius = 72;
   const cx = 100;
-  const cy = 90;
-  const startAngle = 180; // degrees
-  const endAngle = 0;
-  const totalAngle = 180;
-  const sweepAngle = (displayScore / 100) * totalAngle;
+  const cy = 95;
 
-  function polarToCartesian(angle: number) {
-    const rad = ((angle - 90) * Math.PI) / 180;
+  function polarToCartesian(angleDeg: number) {
+    const rad = (angleDeg * Math.PI) / 180;
     return {
       x: cx + radius * Math.cos(rad),
       y: cy + radius * Math.sin(rad),
     };
   }
 
-  const start2 = polarToCartesian(startAngle);
-  const end2 = polarToCartesian(startAngle - sweepAngle);
+  // Track: 180° → 0° (left to right, upper semicircle)
+  const trackLeft = polarToCartesian(180);
+  const trackRight = polarToCartesian(0);
+
+  // Score arc: starts at left (180°), sweeps clockwise toward 0°
+  const sweepAngle = (displayScore / 100) * 180;
+  const scoreEnd = polarToCartesian(180 - sweepAngle);
   const largeArc = sweepAngle > 180 ? 1 : 0;
 
-  const trackStart = polarToCartesian(startAngle);
-  const trackEnd = polarToCartesian(endAngle);
-
   return (
-    <div className={`rounded-xl shadow-sm p-6 flex flex-col items-center gap-3 ${bg}`}>
+    <div className={`rounded-2xl border-2 ${border} ${bg} shadow-sm p-6 flex flex-col items-center gap-4`}>
       {isWhitelisted && (
-        <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+        <div className="flex items-center gap-2 bg-green-100 text-green-800 px-4 py-1.5 rounded-full text-base font-semibold">
           <span aria-hidden="true">✓</span>
           공식 인증 금융기관
         </div>
       )}
 
       <svg
-        width="200"
-        height="110"
+        width="220"
+        height="120"
         viewBox="0 0 200 110"
         role="img"
         aria-label={`위험 지수 ${score}점 - ${label}`}
       >
-        {/* Track */}
+        {/* Track arc */}
         <path
-          d={`M ${trackStart.x} ${trackStart.y} A ${radius} ${radius} 0 0 1 ${trackEnd.x} ${trackEnd.y}`}
+          d={`M ${trackLeft.x} ${trackLeft.y} A ${radius} ${radius} 0 0 1 ${trackRight.x} ${trackRight.y}`}
           fill="none"
           stroke="#E2E8F0"
-          strokeWidth="14"
+          strokeWidth="16"
           strokeLinecap="round"
         />
         {/* Score arc */}
         {displayScore > 0 && (
           <path
-            d={`M ${start2.x} ${start2.y} A ${radius} ${radius} 0 ${largeArc} 1 ${end2.x} ${end2.y}`}
+            d={`M ${trackLeft.x} ${trackLeft.y} A ${radius} ${radius} 0 ${largeArc} 1 ${scoreEnd.x} ${scoreEnd.y}`}
             fill="none"
             stroke={color}
-            strokeWidth="14"
+            strokeWidth="16"
             strokeLinecap="round"
           />
         )}
-        {/* Score text */}
+        {/* Score number */}
         <text
           x={cx}
-          y={cy - 5}
+          y={cy - 10}
           textAnchor="middle"
-          fontSize="32"
-          fontWeight="700"
+          fontSize="36"
+          fontWeight="800"
           fill={color}
-          fontFamily="Inter, sans-serif"
+          fontFamily="Pretendard, Inter, sans-serif"
         >
           {displayScore}
         </text>
         <text
           x={cx}
-          y={cy + 18}
+          y={cy + 14}
           textAnchor="middle"
-          fontSize="13"
+          fontSize="14"
           fill="#64748B"
           fontFamily="Pretendard, sans-serif"
         >
@@ -120,24 +118,24 @@ export function RiskGauge({ score, isWhitelisted }: RiskGaugeProps) {
       </svg>
 
       <div
-        className="text-lg font-bold"
+        className="text-xl font-bold"
         style={{ color }}
         aria-live="polite"
       >
         {label} 수준
       </div>
 
-      <div className="flex gap-4 text-xs text-slate-500">
-        <span className="flex items-center gap-1">
-          <span className="inline-block w-3 h-3 rounded-full bg-green-500" aria-hidden="true" />
+      <div className="flex flex-wrap justify-center gap-4 text-sm text-slate-500">
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block w-3 h-3 rounded-full bg-green-500 flex-shrink-0" aria-hidden="true" />
           안전 (0~30)
         </span>
-        <span className="flex items-center gap-1">
-          <span className="inline-block w-3 h-3 rounded-full bg-amber-500" aria-hidden="true" />
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block w-3 h-3 rounded-full bg-amber-500 flex-shrink-0" aria-hidden="true" />
           주의 (31~69)
         </span>
-        <span className="flex items-center gap-1">
-          <span className="inline-block w-3 h-3 rounded-full bg-red-500" aria-hidden="true" />
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block w-3 h-3 rounded-full bg-red-600 flex-shrink-0" aria-hidden="true" />
           위험 (70~100)
         </span>
       </div>

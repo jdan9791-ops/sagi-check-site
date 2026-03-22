@@ -74,6 +74,10 @@ function buildChecklistItems(data: {
   isKoreaServer: boolean | null;
   domainAge: number | null;
   domainCreated: string | null;
+  privacyProtected: boolean;
+  registrantCountry: string | null;
+  registrationYears: number | null;
+  siteType: "FINANCE" | "SHOPPING" | "NORMAL";
 }): ChecklistItem[] {
   const items: ChecklistItem[] = [];
 
@@ -119,6 +123,32 @@ function buildChecklistItems(data: {
       label: "도메인 나이",
       value: ageLabel,
       status: data.domainAge < 30 ? "fail" : data.domainAge < 180 ? "info" : "pass",
+    });
+  }
+
+  if (data.registrantCountry !== null) {
+    const isKorea =
+      data.registrantCountry.toLowerCase() === "korea" ||
+      data.registrantCountry.toLowerCase() === "kr" ||
+      data.registrantCountry.includes("한국");
+    items.push({
+      label: "도메인 등록 국가",
+      value: `${data.registrantCountry} ${isKorea ? "(국내)" : "(해외)"}`,
+      status: isKorea ? "pass" : "info",
+    });
+  }
+
+  if (data.privacyProtected && data.siteType === "FINANCE" && (data.domainAge ?? 999) < 180) {
+    items.push({
+      label: "등록자 정보",
+      value: "개인정보 보호 처리됨 (신규 금융 사이트 + 비공개)",
+      status: "fail",
+    });
+  } else if (data.privacyProtected) {
+    items.push({
+      label: "등록자 정보",
+      value: "개인정보 보호 처리됨",
+      status: "info",
     });
   }
 
@@ -199,13 +229,21 @@ export async function runAnalysisPipeline(url: string): Promise<AnalyzeResponse>
     isKoreaServer: geoResult?.isKorea ?? null,
     domainAge: whoisResult?.ageInDays ?? null,
     domainCreated: whoisResult?.creationDate ?? null,
+    privacyProtected: whoisResult?.privacyProtected ?? false,
+    registrantCountry: whoisResult?.registrantCountry ?? null,
+    registrationYears: whoisResult?.registrationYears ?? null,
+    siteType,
   });
+
+  // Override positives to empty for high-risk sites
+  const positives =
+    geminiResult.riskScore >= 70 ? ["없습니다"] : geminiResult.positives;
 
   const result: AnalyzeResponse = {
     riskScore: geminiResult.riskScore,
     siteType,
     isWhitelisted: false,
-    positives: geminiResult.positives,
+    positives,
     negatives: geminiResult.negatives,
     summary: geminiResult.summary,
     checklistItems,

@@ -15,26 +15,34 @@ interface GeminiContext {
   businessNumbers: string[];
 }
 
-const SYSTEM_PROMPT = `당신은 웹사이트 안전성을 분석하는 전문가입니다.
+const SYSTEM_PROMPT = `당신은 금융 투자 사기 사이트 탐지 전문가입니다.
 
 ## 분석 원칙
-- 분석 결과는 참고용이며 법적 효력이 없습니다.
-- "사기"라는 단어를 직접 사용하지 마세요. 대신 "우려됨", "주의 요망", "위험 징후", "주의 필요" 등의 표현을 사용하세요.
-- 정확한 근거 없이 특정 기업을 단정적으로 표현하지 마세요.
-- 객관적인 데이터에 근거하여 분석하세요.
+- "사기"라는 단어 대신 "위험 징후", "우려됨", "주의 요망" 사용
+- 정확한 근거 없이 특정 기업 단정 금지
+- 분석 결과는 참고용이며 법적 효력 없음
 
-## 응답 형식 (반드시 준수)
-다음 형식으로만 응답하세요. 다른 내용은 포함하지 마세요:
-
-위험 지수: [0~100 사이 숫자]점
-긍정적인 사항: [항목1] | [항목2] | [항목3]
-부정적인 사항: [항목1] | [항목2] | [항목3]
-요약 사항: 요약하자면, [도메인]은 [이유]로 인해 [결론]입니다.
+## 사기 사이트 주요 패턴 (각 항목 확인 필수)
+1. 유명 거래소/기업 사칭: 로고·문구·디자인 무단 복제
+2. 가짜 실시간 거래 현황: 입금/출금 숫자가 자동으로 올라오는 위젯
+3. 도메인 나이 vs 사이트 내 주장 연도 불일치 (예: "2017년부터" 근데 도메인은 6개월)
+4. 과도한 수익률 보장: "원금보장", "월 30% 수익"
+5. 등록 국가 불일치: 한국 타겟인데 해외 도메인 등록
+6. 출금 방해 패턴: "세금", "보증금", "수수료" 명목 추가 입금 요구
+7. 리딩방·텔레그램 유도: SNS/카카오 통해 가입 유도
+8. 금융위원회 미등록: 공식 허가 없는 투자 서비스
 
 ## 위험 지수 가이드라인
-- 0~30점: 안전 (공식 인증, 정상 운영, 투명한 정보)
-- 31~69점: 주의 (일부 불명확한 정보, 추가 확인 권장)
-- 70~100점: 위험 (다수의 위험 징후, 이용 자제 권장)`;
+- 0~30점: 안전 (공식 인증, 정상 운영)
+- 31~69점: 주의 (일부 불명확, 추가 확인 권장)
+- 70~89점: 위험 (다수 위험 징후)
+- 90~100점: 매우 위험 (전형적 사기 패턴 다수 확인, 즉시 이용 중단 권고)
+
+## 응답 형식 (반드시 준수)
+위험 지수: [0~100]점
+긍정적인 사항: [항목1] | [항목2]
+부정적인 사항: [항목1] | [항목2] | [항목3]
+요약 사항: 요약하자면, [도메인]은 [구체적 이유]로 인해 [결론]입니다.`;
 
 /** Parse Gemini's structured text response. */
 function parseGeminiResponse(text: string, domain: string): GeminiParsed {
@@ -47,7 +55,7 @@ function parseGeminiResponse(text: string, domain: string): GeminiParsed {
     const riskScore = riskMatch ? Math.min(100, Math.max(0, parseInt(riskMatch[1], 10))) : 50;
     const positives = posMatch
       ? posMatch[1].split("|").map((s) => s.trim()).filter(Boolean)
-      : ["분석 데이터 부족"];
+      : [];
     const negatives = negMatch
       ? negMatch[1].split("|").map((s) => s.trim()).filter(Boolean)
       : ["분석 데이터 부족"];
@@ -57,11 +65,10 @@ function parseGeminiResponse(text: string, domain: string): GeminiParsed {
 
     return { riskScore, positives, negatives, summary };
   } catch {
-    // Fallback
     return {
       riskScore: 50,
-      positives: ["분석 중 오류가 발생했습니다."],
-      negatives: ["분석 중 오류가 발생했습니다."],
+      positives: [],
+      negatives: ["분석 중 오류가 발생하여 결과를 신뢰하기 어렵습니다."],
       summary: `요약하자면, ${domain}은 분석 중 오류가 발생하여 결과를 신뢰하기 어렵습니다.`,
     };
   }
@@ -102,7 +109,10 @@ ${
   ctx.whoisResult
     ? `- 도메인 생성일: ${ctx.whoisResult.creationDate ?? "알 수 없음"}
 - 도메인 나이: ${ctx.whoisResult.ageInDays != null ? `${ctx.whoisResult.ageInDays}일` : "알 수 없음"}
-- 등록기관: ${ctx.whoisResult.registrar ?? "알 수 없음"}`
+- 등록기관: ${ctx.whoisResult.registrar ?? "알 수 없음"}
+- 등록 기간: ${ctx.whoisResult.registrationYears != null ? `${ctx.whoisResult.registrationYears}년` : "알 수 없음"}
+- 등록자 국가: ${ctx.whoisResult.registrantCountry ?? "알 수 없음"}
+- 등록자 정보 비공개: ${ctx.whoisResult.privacyProtected ? "예 (Privacy Protection 사용 중)" : "아니오"}`
     : "- 도메인 정보를 가져올 수 없음"
 }
 
@@ -140,8 +150,8 @@ ${ctx.siteText}
   } catch {
     return {
       riskScore: 50,
-      positives: ["AI 분석 서비스에 일시적 오류가 발생했습니다."],
-      negatives: ["분석 결과를 신뢰하기 어렵습니다."],
+      positives: [],
+      negatives: ["AI 분석 서비스 오류로 결과를 신뢰하기 어렵습니다."],
       summary: `요약하자면, ${domain}은 AI 분석 중 오류가 발생하여 정확한 위험도를 산정할 수 없습니다.`,
     };
   }

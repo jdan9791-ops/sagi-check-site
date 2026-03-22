@@ -159,13 +159,18 @@ export async function classifyWithGemini(
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   try {
-    const prompt = `다음 웹사이트의 유형을 분류해주세요.
+    const isContentSparse = siteText.trim().length < 200;
+    const contentNote = isContentSparse
+      ? `\n참고: 사이트 내용을 크롤링하지 못했습니다 (JavaScript 렌더링 또는 봇 차단 가능성). URL과 도메인명만으로 판단하세요. 암호화폐 거래소, 투자, 코인 관련 도메인이면 FINANCE로 분류하세요.`
+      : "";
+
+    const prompt = `다음 웹사이트의 유형을 분류해주세요.${contentNote}
 
 URL: ${url}
-사이트 내용 (일부): ${siteText.slice(0, 500)}
+사이트 내용 (일부): ${siteText.slice(0, 500) || "(내용 없음)"}
 
 반드시 다음 중 하나만 응답하세요 (다른 내용 없이):
-- FINANCE (금융, 투자, 증권, 코인, 대출 관련)
+- FINANCE (금융, 투자, 증권, 코인, 암호화폐 거래소, 대출 관련)
 - SHOPPING (쇼핑몰, 상품 판매 관련)
 - NORMAL (그 외 일반 사이트)`;
 

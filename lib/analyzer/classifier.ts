@@ -13,13 +13,16 @@ export async function classifySite(
   url: string
 ): Promise<SiteType> {
   const lowerText = siteText.toLowerCase();
+  const isContentSparse = lowerText.trim().length < 200;
 
   // 1st pass: count finance keywords
+  // If content is sparse (JS-rendered site), lower threshold to 1 keyword
   const financeCount = FINANCE_KEYWORDS.filter((kw) =>
     lowerText.includes(kw.toLowerCase())
   ).length;
 
-  if (financeCount >= 2) return "FINANCE";
+  const financeThreshold = isContentSparse ? 1 : 2;
+  if (financeCount >= financeThreshold) return "FINANCE";
 
   // Count shopping keywords
   const shoppingCount = SHOPPING_KEYWORDS.filter((kw) =>

@@ -140,9 +140,14 @@ export function UrlInput({ onResult, onLoading }: UrlInputProps) {
       </div>
 
       {error && (
-        <p id="url-error" className="text-sm text-red-600" role="alert">
-          {error}
-        </p>
+        <div
+          id="url-error"
+          className="flex items-start gap-2 bg-red-50 border border-red-300 rounded-lg px-4 py-3 text-sm text-red-700"
+          role="alert"
+        >
+          <span className="mt-0.5 shrink-0">⚠️</span>
+          <span>{error}</span>
+        </div>
       )}
 
       {requiresCaptcha && (

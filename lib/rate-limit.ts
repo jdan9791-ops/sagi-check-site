@@ -47,7 +47,8 @@ export async function checkRateLimit(
     pipeline.incr(ipDayKey);
     pipeline.expire(ipDayKey, 60 * 60 * 25); // 25h TTL
     pipeline.incr(ipMinKey);
-    pipeline.expire(ipMinKey, 70); // 70s TTL
+    // NOTE: Do NOT call expire here — TTL is set only on first request (count=1)
+    // to avoid blocked requests extending the window indefinitely.
 
     let fpDayCount = 0;
     if (fingerprintId) {
@@ -60,7 +61,13 @@ export async function checkRateLimit(
     const ipDayCount = (results[0] as number) ?? 0;
     const ipMinCount = (results[2] as number) ?? 0;
     if (fingerprintId) {
-      fpDayCount = (results[4] as number) ?? 0;
+      fpDayCount = (results[3] as number) ?? 0;
+    }
+
+    // Set 70s TTL only on the first request in the window so blocked retries
+    // don't reset the expiry (which would permanently lock the user out).
+    if (ipMinCount === 1) {
+      void redis.expire(ipMinKey, 70);
     }
 
     // Check minute limit

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-
-export const maxDuration = 60; // seconds (Vercel serverless function timeout)
 import { AnalyzeRequestSchema } from "@/lib/schemas";
 import { runAnalysisPipeline } from "@/lib/analyzer/pipeline";
 import { checkRateLimit, getIpMinuteCount, shouldSendAbuseAlert } from "@/lib/rate-limit";
 import { verifyHCaptcha } from "@/lib/fingerprint";
 import { sendAbuseAlert } from "@/lib/telegram";
+
+export const maxDuration = 60; // Vercel serverless function timeout (seconds)
 
 function getClientIp(req: NextRequest): string {
   return (

@@ -4,4 +4,5 @@
  * 사이트 완성 후 헤더에서 <VersionBadge /> 컴포넌트를 제거하면 됩니다.
  */
 export const DEV_VERSION = "1.1";
-export const DEV_UPDATED_AT = "2026-03-22 오후 11:00";
+// Automatically set at build time via NEXT_PUBLIC_BUILD_TIME env var (KST)
+export const DEV_UPDATED_AT = process.env.NEXT_PUBLIC_BUILD_TIME ?? "알 수 없음";

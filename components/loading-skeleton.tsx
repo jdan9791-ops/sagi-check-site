@@ -1,3 +1,5 @@
+import { AdBanner } from "./ad-banner";
+
 export function LoadingSkeleton() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6" aria-label="분석 중">
@@ -29,6 +31,8 @@ export function LoadingSkeleton() {
         </div>
         <p className="text-sm text-slate-500">정부 데이터베이스와 AI 분석을 진행 중입니다.</p>
       </div>
+
+      <AdBanner />
 
       {/* Risk gauge skeleton */}
       <div className="bg-white rounded-xl shadow-sm p-6 flex flex-col items-center gap-4">

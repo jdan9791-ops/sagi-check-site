@@ -29,16 +29,11 @@ function extractBusinessNumbers(text: string): string[] {
 }
 
 /**
- * Crawl a website and return its text content (max 3000 chars).
- * Blocks internal IPs for SSRF defense.
+ * Fetch a single URL and return crawl result. Throws on failure.
  */
-export async function crawlWebsite(url: string): Promise<CrawlResult> {
+async function fetchUrl(url: string): Promise<CrawlResult> {
   const parsed = new URL(url);
   const hostname = parsed.hostname;
-
-  if (isBlockedHost(hostname)) {
-    throw new Error("접근이 차단된 주소입니다.");
-  }
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), CRAWLER_TIMEOUT_MS);
@@ -73,5 +68,29 @@ export async function crawlWebsite(url: string): Promise<CrawlResult> {
     };
   } finally {
     clearTimeout(timeoutId);
+  }
+}
+
+/**
+ * Crawl a website and return its text content (max 3000 chars).
+ * Blocks internal IPs for SSRF defense.
+ * If HTTPS fails, automatically retries with HTTP.
+ */
+export async function crawlWebsite(url: string): Promise<CrawlResult> {
+  const parsed = new URL(url);
+
+  if (isBlockedHost(parsed.hostname)) {
+    throw new Error("접근이 차단된 주소입니다.");
+  }
+
+  try {
+    return await fetchUrl(url);
+  } catch {
+    // HTTPS 실패 시 HTTP로 폴백 (프로토콜 없이 입력된 URL 등 대응)
+    if (parsed.protocol === "https:") {
+      const httpUrl = url.replace(/^https:/, "http:");
+      return await fetchUrl(httpUrl);
+    }
+    throw new Error("사이트에 접근할 수 없습니다.");
   }
 }

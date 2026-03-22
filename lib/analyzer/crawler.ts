@@ -56,7 +56,13 @@ export async function crawlWebsite(url: string): Promise<CrawlResult> {
     });
 
     const rawHtml = await response.text();
-    const text = stripHtml(rawHtml).slice(0, MAX_HTML_LENGTH);
+    const fullText = stripHtml(rawHtml);
+    // Sample from start and end to capture both main content and footer keywords
+    const headText = fullText.slice(0, Math.floor(MAX_HTML_LENGTH * 0.7));
+    const tailText = fullText.slice(-Math.floor(MAX_HTML_LENGTH * 0.3));
+    const text = fullText.length > MAX_HTML_LENGTH
+      ? `${headText} ${tailText}`.slice(0, MAX_HTML_LENGTH)
+      : fullText;
     const businessNumbers = extractBusinessNumbers(text);
 
     return {

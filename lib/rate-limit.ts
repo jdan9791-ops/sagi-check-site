@@ -28,6 +28,13 @@ export interface RateLimitResult {
   reason?: string;
 }
 
+/** IPs that are never rate-limited (comma-separated in ADMIN_IPS env var). */
+function isAdminIp(ip: string): boolean {
+  const adminIps = process.env.ADMIN_IPS ?? "";
+  if (!adminIps) return false;
+  return adminIps.split(",").map((s) => s.trim()).includes(ip);
+}
+
 /**
  * Check rate limits for IP and fingerprint.
  * Layer 1: IP-based (10/min, 100/day)
@@ -38,6 +45,11 @@ export async function checkRateLimit(
   ip: string,
   fingerprintId?: string
 ): Promise<RateLimitResult> {
+  // Admin IPs bypass all rate limits
+  if (isAdminIp(ip)) {
+    return { allowed: true, requiresCaptcha: false, totalCount: 0 };
+  }
+
   try {
     const pipeline = redis.pipeline();
 

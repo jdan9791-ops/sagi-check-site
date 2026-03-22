@@ -9,6 +9,7 @@ import { ChecklistCard } from "@/components/checklist-card";
 import { ActionGuide } from "@/components/action-guide";
 import { ResponseGuide } from "@/components/response-guide";
 import { Disclaimer } from "@/components/disclaimer";
+import { VersionBadge } from "@/components/version-badge";
 import { AnalyzeResponse } from "@/lib/schemas";
 
 export default function HomePage() {
@@ -26,7 +27,10 @@ export default function HomePage() {
       {/* Header */}
       <header className="bg-blue-700 text-white py-4 px-4 shadow-sm">
         <div className="max-w-2xl mx-auto">
-          <span className="text-xl font-bold">사이트 안전 검사</span>
+          <span className="text-xl font-bold inline-flex items-center flex-wrap gap-1">
+            사이트 안전 검사
+            <VersionBadge />
+          </span>
           <p className="text-blue-200 text-sm mt-0.5">
             AI + 정부 데이터 기반 무료 위험도 분석
           </p>

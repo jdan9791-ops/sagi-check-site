@@ -102,7 +102,8 @@ export async function analyzeWithGemini(
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const modelName = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
+  const model = genAI.getGenerativeModel({ model: modelName });
 
   const domain = new URL(ctx.url).hostname;
   const systemPrompt = await getConfig("system_prompt", DEFAULT_SYSTEM_PROMPT);
@@ -166,7 +167,8 @@ ${ctx.siteText}
 
     const responseText = result.response.text();
     return parseGeminiResponse(responseText, domain);
-  } catch {
+  } catch (err) {
+    console.error("[Gemini] analyzeWithGemini error:", err);
     return {
       riskScore: 50,
       positives: [],
@@ -185,7 +187,8 @@ export async function classifyWithGemini(
   if (!apiKey) return "NORMAL";
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const modelName = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
+  const model = genAI.getGenerativeModel({ model: modelName });
 
   try {
     const isContentSparse = siteText.trim().length < 200;
@@ -209,7 +212,8 @@ URL: ${url}
     if (text.includes("FINANCE")) return "FINANCE";
     if (text.includes("SHOPPING")) return "SHOPPING";
     return "NORMAL";
-  } catch {
+  } catch (err) {
+    console.error("[Gemini] classifyWithGemini error:", err);
     return "NORMAL";
   }
 }
